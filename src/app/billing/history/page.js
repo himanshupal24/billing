@@ -13,40 +13,32 @@ export default function HistoryPage() {
   const fetchBills = async () => {
     const res = await fetch('/admin/api/bills');
     const allBills = await res.json();
-    const userBills = allBills.filter(b => b.user === user);
+    const userBills = allBills.filter((b) => b.user.toLowerCase() === user.toLowerCase());
     setBills(userBills);
     setFiltered(userBills);
-    setShowConfirm(false); // Hide modal
+    setShowConfirm(false);
   };
 
   const filterBills = () => {
     let result = [...bills];
     if (search) {
-      result = result.filter(b => b.phoneNo.includes(search));
+      result = result.filter((b) => b.phoneNo.includes(search));
     }
     if (date) {
-      result = result.filter(b => {
-  const billDate = new Date(b.createdAt).toISOString().slice(0, 10);
-  return billDate === date;
-});
+      result = result.filter((b) => new Date(b.createdAt).toISOString().slice(0, 10) === date);
     }
     setFiltered(result);
   };
 
-  const getTotal = (bills) => {
-    return bills.reduce((sum, b) => sum + b.totalAmount, 0);
-  };
+  const getTotal = (list) => list.reduce((sum, b) => sum + b.totalAmount, 0);
 
   const getMonthYearTotal = (type) => {
     const now = new Date();
     return filtered
-      .filter(b => {
+      .filter((b) => {
         const billDate = new Date(b.createdAt);
         if (type === 'month') {
-          return (
-            billDate.getMonth() === now.getMonth() &&
-            billDate.getFullYear() === now.getFullYear()
-          );
+          return billDate.getMonth() === now.getMonth() && billDate.getFullYear() === now.getFullYear();
         }
         if (type === 'year') {
           return billDate.getFullYear() === now.getFullYear();
@@ -57,15 +49,45 @@ export default function HistoryPage() {
   };
 
   const exportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filtered);
+    const formatted = filtered.flatMap((bill) => {
+      const date = new Date(bill.createdAt);
+      return bill.items.map((item) => ({
+        User: bill.user,
+        'House No': bill.houseNo,
+        'Phone No': bill.phoneNo,
+        Product: item.productName,
+        Quantity: item.qty,
+        'Item Total (₹)': `₹ ${item.qty * item.price}`,
+        'Bill Total (₹)': `₹ ${bill.totalAmount}`,
+        Date: date.toLocaleDateString('en-IN'),
+        Time: date.toLocaleTimeString('en-IN'),
+      }));
+    });
+
+    const ws = XLSX.utils.json_to_sheet(formatted);
+    ws['!cols'] = [
+      { wch: 20 },
+      { wch: 12 },
+      { wch: 14 },
+      { wch: 20 },
+      { wch: 10 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 12 },
+      { wch: 10 },
+    ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Bills');
-    XLSX.writeFile(wb, 'billing_history.xlsx');
+    XLSX.writeFile(wb, `billing_history_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
-useEffect(() => {
-  if (user) fetchBills();
-}, [user]);
+  useEffect(() => {
+    if (user) fetchBills();
+  }, [user]);
+
+  useEffect(() => {
+    filterBills();
+  }, [search, date]);
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
@@ -79,14 +101,14 @@ useEffect(() => {
       />
       <button
         onClick={() => setShowConfirm(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="bg-blue-600 text-white px-4 py-2 rounded mt-2"
       >
         Load Bills
       </button>
 
       {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white p-6 rounded shadow max-w-sm text-center">
             <p>Load bills for <strong>{user}</strong>?</p>
             <div className="mt-4 space-x-3">
@@ -121,9 +143,9 @@ useEffect(() => {
           onChange={(e) => setDate(e.target.value)}
         />
       </div>
-{filtered.length === 0 && (
-  <p className="text-gray-500">No bills found.</p>
-)}
+
+      {filtered.length === 0 && <p className="text-gray-500">No bills found.</p>}
+
       {filtered.length > 0 && (
         <>
           <ul className="mt-4 space-y-3">

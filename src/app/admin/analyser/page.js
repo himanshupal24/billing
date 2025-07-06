@@ -71,23 +71,23 @@ const users = Array.from(userMap.values());
     });
 
     // Step 2: Format data with Monthly Total column
-    const formattedData = filteredBills.map((bill) => {
-        const date = new Date(bill.createdAt);
-        const monthKey = `${bill.user}_${date.getFullYear()}-${date.getMonth() + 1}`;
-        const monthlyTotal = monthlyTotals[monthKey] || 0;
+    const formattedData = filteredBills.flatMap((bill) => {
+    const date = new Date(bill.createdAt);
+    const monthKey = `${bill.user}_${date.getFullYear()}-${date.getMonth() + 1}`;
+    const monthlyTotal = monthlyTotals[monthKey] || 0;
 
-        return {
-            User: bill.user,
-            'House No': bill.houseNo,
-            'Phone No': bill.phoneNo,
-            Product: bill.product,
-            Quantity: bill.qty,
-            'Total Amount (₹)': `₹ ${bill.totalAmount}`,
-            'Monthly Total (₹)': `₹ ${monthlyTotal}`,
-            Date: date.toLocaleDateString('en-IN'),
-            Time: date.toLocaleTimeString('en-IN'),
-        };
-    });
+    return bill.items.map((item) => ({
+        User: bill.user,
+        'House No': bill.houseNo,
+        'Phone No': bill.phoneNo,
+        Product: item.productName,
+        Quantity: item.qty,
+        'Total Amount (₹)': `₹ ${item.price * item.qty}`,
+        'Monthly Total (₹)': `₹ ${monthlyTotal}`,
+        Date: date.toLocaleDateString('en-IN'),
+        Time: date.toLocaleTimeString('en-IN'),
+    }));
+});
 
     const ws = XLSX.utils.json_to_sheet(formattedData);
 
