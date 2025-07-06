@@ -18,13 +18,26 @@ export default function AdminAnalyser() {
             });
     }, []);
 
-    const users = [...new Set(bills.map((b) => b.user))];
+    // Group by lowercase name, but store/display original version
+const userMap = new Map();
+
+bills.forEach((bill) => {
+    const cleanName = bill.user.trim().toLowerCase();
+    if (!userMap.has(cleanName)) {
+        userMap.set(cleanName, bill.user); // Store the original
+    }
+});
+
+const users = Array.from(userMap.values());
+
 
     const filterBills = () => {
         let result = bills;
 
         if (selectedUser) {
-            result = result.filter((b) => b.user === selectedUser);
+            result = result.filter((b) =>
+    b.user.trim().toLowerCase() === selectedUser.trim().toLowerCase()
+);
         }
 
         if (searchPhone) {
@@ -45,32 +58,57 @@ export default function AdminAnalyser() {
     }, [selectedUser, searchPhone, searchDate]);
 
     const exportToExcel = () => {
-        const formattedData = filteredBills.map((bill) => ({
+    // Step 1: Build monthly total map for the selected user
+    const monthlyTotals = {};
+
+    filteredBills.forEach((bill) => {
+        const date = new Date(bill.createdAt);
+        const monthKey = `${bill.user}_${date.getFullYear()}-${date.getMonth() + 1}`; // e.g. "John_2025-7"
+        if (!monthlyTotals[monthKey]) {
+            monthlyTotals[monthKey] = 0;
+        }
+        monthlyTotals[monthKey] += bill.totalAmount;
+    });
+
+    // Step 2: Format data with Monthly Total column
+    const formattedData = filteredBills.map((bill) => {
+        const date = new Date(bill.createdAt);
+        const monthKey = `${bill.user}_${date.getFullYear()}-${date.getMonth() + 1}`;
+        const monthlyTotal = monthlyTotals[monthKey] || 0;
+
+        return {
             User: bill.user,
             'House No': bill.houseNo,
             'Phone No': bill.phoneNo,
+            Product: bill.product,
+            Quantity: bill.qty,
             'Total Amount (₹)': `₹ ${bill.totalAmount}`,
-            'Date': new Date(bill.createdAt).toLocaleDateString('en-IN'),
-            'Time': new Date(bill.createdAt).toLocaleTimeString('en-IN'),
-        }));
+            'Monthly Total (₹)': `₹ ${monthlyTotal}`,
+            Date: date.toLocaleDateString('en-IN'),
+            Time: date.toLocaleTimeString('en-IN'),
+        };
+    });
 
-        const ws = XLSX.utils.json_to_sheet(formattedData);
+    const ws = XLSX.utils.json_to_sheet(formattedData);
 
-        // Optional: Set column widths
-        const wscols = [
-            { wch: 20 }, // User
-            { wch: 12 }, // House No
-            { wch: 15 }, // Phone No
-            { wch: 18 }, // Amount
-            { wch: 15 }, // Date
-            { wch: 12 }, // Time
-        ];
-        ws['!cols'] = wscols;
+    // Optional: Set column widths
+    const wscols = [
+        { wch: 20 }, // User
+        { wch: 12 }, // House No
+        { wch: 15 }, // Phone No
+        { wch: 15 }, // Product
+        { wch: 10 }, // Quantity
+        { wch: 18 }, // Total
+        { wch: 18 }, // Monthly Total
+        { wch: 15 }, // Date
+        { wch: 12 }, // Time
+    ];
+    ws['!cols'] = wscols;
 
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Filtered Bills');
-        XLSX.writeFile(wb, `Bill_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    };
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Filtered Bills');
+    XLSX.writeFile(wb, `Bill_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
 
     const getTotals = () => {
         const now = new Date();
