@@ -7,7 +7,8 @@ export default function AdminAnalyser() {
     const [filteredBills, setFilteredBills] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
     const [searchPhone, setSearchPhone] = useState('');
-    const [searchDate, setSearchDate] = useState('');
+  const [startDate, setStartDate] = useState('');
+const [endDate, setEndDate] = useState('');
 
     useEffect(() => {
         fetch('/admin/api/bills')
@@ -44,18 +45,25 @@ const users = Array.from(userMap.values());
             result = result.filter((b) => b.phoneNo.includes(searchPhone));
         }
 
-        if (searchDate) {
-            result = result.filter((b) =>
-                new Date(b.createdAt).toISOString().slice(0, 10) === searchDate
-            );
-        }
+        if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999); // Include the full end day
+
+    result = result.filter((b) => {
+        const billDate = new Date(b.createdAt);
+        return billDate >= start && billDate <= end;
+    });
+}
+
 
         setFilteredBills(result);
     };
 
     useEffect(() => {
-        filterBills();
-    }, [selectedUser, searchPhone, searchDate]);
+  filterBills();
+}, [selectedUser, searchPhone, startDate, endDate]);
+
 
     const exportToExcel = () => {
     // Step 1: Build monthly total map for the selected user
@@ -233,12 +241,23 @@ const users = Array.from(userMap.values());
                     value={searchPhone}
                     onChange={(e) => setSearchPhone(e.target.value)}
                 />
-                <input
-                    type="date"
-                    className="border border-gray-300 p-2 rounded-md w-full"
-                    value={searchDate}
-                    onChange={(e) => setSearchDate(e.target.value)}
-                />
+                <div className="flex gap-4 flex-col sm:flex-row">
+  <input
+    type="date"
+    className="border border-gray-300 p-2 rounded-md w-full"
+    value={startDate}
+    onChange={(e) => setStartDate(e.target.value)}
+    placeholder="Start Date"
+  />
+  <input
+    type="date"
+    className="border border-gray-300 p-2 rounded-md w-full"
+    value={endDate}
+    onChange={(e) => setEndDate(e.target.value)}
+    placeholder="End Date"
+  />
+</div>
+
             </div>
 
             {/* Bill List */}

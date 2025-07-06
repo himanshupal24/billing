@@ -19,3 +19,5 @@ export async function DELETE(req) {
   await Bill.deleteMany({});
   return Response.json({ message: 'All bills deleted' });
 }
+
+
