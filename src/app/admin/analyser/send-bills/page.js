@@ -48,7 +48,8 @@ export default function SendBillsPage() {
 
     const message = `Hello ${user}, your total bill for ${monthName} is ₹${total}.\n\n🛒 Products: ${productLines}\n\nThank you!`;
 
-    const url = `https://wa.me/91${phoneNo}?text=${encodeURIComponent(message)}`;
+    const url = `https://api.whatsapp.com/send?phone=91${phoneNo}&text=${encodeURIComponent(message)}`;
+
     window.open(url, '_blank');
   };
 

@@ -155,15 +155,13 @@ export default function HistoryPage() {
                 <p>🕒 {new Date(bill.createdAt).toLocaleString()}</p>
                 <p className="font-bold">₹ {bill.totalAmount}</p>
                 <a
-                  href={`https://wa.me/${bill.phoneNo}?text=Hi! Your bill on ${new Date(
-                    bill.createdAt
-                  ).toLocaleDateString()} is ₹${bill.totalAmount}.`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-green-600 underline text-sm"
-                >
-                  Send via WhatsApp
-                </a>
+  href={`https://api.whatsapp.com/send?phone=91${entry.phoneNo}&text=${encodeURIComponent(message)}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md inline-block"
+>
+  Send via WhatsApp
+</a>
               </li>
             ))}
           </ul>
