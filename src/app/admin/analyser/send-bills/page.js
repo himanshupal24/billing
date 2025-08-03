@@ -38,19 +38,22 @@ export default function SendBillsPage() {
 
     setGrouped(groupedBills);
   }, []);
-
-  const handleSendWhatsApp = ({ user, phoneNo, total, products }) => {
+const handleSendWhatsApp = ({ user, phoneNo, total, products }) => {
     const monthName = new Date().toLocaleString('default', { month: 'long' });
 
     const productLines = Object.entries(products)
       .map(([name, qty]) => `${name} x${qty}`)
       .join(', ');
 
-    const message = `Hello ${user}, your total bill for ${monthName} is ₹${total}.\n\n🛒 Products: ${productLines}\n\nThank you!`;
+    const message =
+      `Hello ${user}, your total bill for ${monthName} is ₹${total}.\n\n` +
+      `Products: ${productLines}\n\n` +
+      `Thank you - Anadi Industries LLP`;
 
-    const url = `https://api.whatsapp.com/send?phone=91${phoneNo}&text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/91${phoneNo}?text=${encodeURIComponent(message)}`;
 
-    window.open(url, '_blank');
+    // ✅ Use location.href for better mobile support
+    window.location.href = url;
   };
 
   return (

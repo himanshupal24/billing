@@ -38,36 +38,49 @@ export default function BillingPage() {
     setPrice(0);
   };
 
-  const handleGenerateBill = async () => {
-    const total = items.reduce((sum, i) => sum + i.qty * i.price, 0);
-    const billText = `
-*Anadi Industries LLP*
+const handleGenerateBill = async () => {
+  const total = items.reduce((sum, i) => sum + i.qty * i.price, 0);
 
-🏠 House No: ${houseNo}
-📞 Phone No: ${phoneNo}
-🕒 Date: ${new Date().toLocaleString()}
+  const date = new Date().toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
-🛒 Your Bill:
-${items.map(i => `${i.productName} - Rs${i.price} x ${i.qty} = Rs${i.price * i.qty}`).join('\n')}
+  const billLines = items.map(i =>
+    `${i.productName} - ₹${i.price} x ${i.qty} = ₹${i.price * i.qty}`
+  ).join('\n');
 
-*Grand Total: Rs${total}*
+  const message = 
+    `Anadi Industries LLP\n\n` +
+    `House No: ${houseNo}\n` +
+    `Phone: ${phoneNo}\n` +
+    `Date: ${date}\n\n` +
+    `Bill Details:\n${billLines}\n\n` +
+    `Grand Total: ₹${total}\n\n` +
+    `Health isn't a goal — it's a lifestyle`;
 
-"Health isn't a goal — it's a lifestyle"
-`.trim();
+  const res = await fetch('/billing/api/generate', {
+    method: 'POST',
+    body: JSON.stringify({ user, houseNo, phoneNo, items, totalAmount: total }),
+  });
 
-    const res = await fetch('/billing/api/generate', {
-      method: 'POST',
-      body: JSON.stringify({ user, houseNo, phoneNo, items, totalAmount: total }),
-    });
+  const data = await res.json();
 
-    const data = await res.json();
-    if (res.ok) {
-      const encoded = encodeURIComponent(billText);
-      window.open(`https://wa.me/91${phoneNo}?text=${encoded}`, '_blank');
-    }
+  if (res.ok) {
+    const whatsappURL = `https://wa.me/91${phoneNo}?text=${encodeURIComponent(message)}`;
+    window.location.href = whatsappURL; // ✅ safer for iOS/Android
+  }
 
-    alert(data.message);
-  };
+  alert(data.message);
+};
+
+  
+
+
+
 
   const handleHouseSelect = (val) => {
     setHouseNo(val);
