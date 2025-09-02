@@ -52,12 +52,16 @@ export default function SendBillsPage() {
       .join('\n');
 
     const message =
-      `Customer Name/ No - ${user} / ${houseNo}\n` +
+    `Anadi industries LLP\n\n`
+      `Customer Address/ No - ${houseNo}\n` +
       `Mobile No - ${phoneNo}\n` +
-      `Delivered by - Anadi Industries LLP\n\n` +
+      `Delivered by - ${user}\n` +
       `Products:\n${productLines}\n\n` +
       `Total Bill - ₹${total}\n` +
-      `(Billing Month: ${monthName})`;
+      `(Billing Month: ${monthName-1})`
+      ;
+
+
 
     // ✅ Ensure only digits for phone number
     const cleanPhone = phoneNo.replace(/\D/g, '');
@@ -84,11 +88,13 @@ export default function SendBillsPage() {
           >
             <div className="mb-2 sm:mb-0">
               <p>
-                <strong>👤 Customer:</strong> {entry.user} / {entry.houseNo}
+                <strong>👤 Customer Address:</strong>  {entry.houseNo}
               </p>
               <p>
                 <strong>📞 Phone:</strong> {entry.phoneNo}
               </p>
+              <p>
+                <strong>🧑‍💼 Delivered by:</strong> {entry.user}</p>
               <p>
                 <strong>💵 Total:</strong> ₹{entry.total}
               </p>
