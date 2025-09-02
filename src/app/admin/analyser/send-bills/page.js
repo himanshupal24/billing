@@ -19,7 +19,7 @@ export default function SendBillsPage() {
           phoneNo: bill.phoneNo,
           houseNo: bill.houseNo,
           total: 0,
-          products: {}, // <-- 👈 store products by name with qty
+          products: {}, // store qty & rate
         };
       }
 
@@ -28,37 +28,53 @@ export default function SendBillsPage() {
       bill.items?.forEach((item) => {
         const name = item.productName;
         const qty = item.qty;
+        const rate = item.price;
+
         if (groupedBills[key].products[name]) {
-          groupedBills[key].products[name] += qty;
+          groupedBills[key].products[name].qty += qty;
         } else {
-          groupedBills[key].products[name] = qty;
+          groupedBills[key].products[name] = { qty, rate };
         }
       });
     });
 
     setGrouped(groupedBills);
   }, []);
-const handleSendWhatsApp = ({ user, phoneNo, total, products }) => {
+
+  const handleSendWhatsApp = ({ user, phoneNo, houseNo, total, products }) => {
     const monthName = new Date().toLocaleString('default', { month: 'long' });
 
     const productLines = Object.entries(products)
-      .map(([name, qty]) => `${name} x${qty}`)
-      .join(', ');
+      .map(
+        ([name, { qty, rate }]) =>
+          `${name} - ${qty} x ₹${rate} = ₹${qty * rate}`
+      )
+      .join('\n');
 
     const message =
-      `Hello ${user}, your total bill for ${monthName} is ₹${total}.\n\n` +
-      `Products: ${productLines}\n\n` +
-      `Thank you - Anadi Industries LLP`;
+      `Customer Name/ No - ${user} / ${houseNo}\n` +
+      `Mobile No - ${phoneNo}\n` +
+      `Delivered by - Anadi Industries LLP\n\n` +
+      `Products:\n${productLines}\n\n` +
+      `Total Bill - ₹${total}\n` +
+      `(Billing Month: ${monthName})`;
 
-    const url = `https://wa.me/91${phoneNo}?text=${encodeURIComponent(message)}`;
+    // ✅ Ensure only digits for phone number
+    const cleanPhone = phoneNo.replace(/\D/g, '');
 
-    // ✅ Use location.href for better mobile support
-    window.location.href = url;
+    // ✅ Correct wa.me link
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+      message
+    )}`;
+
+    window.location.href = url; // works for Android & iOS
   };
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">📤 Send Filtered Bills via WhatsApp</h2>
+      <h2 className="text-2xl font-bold mb-4">
+        📤 Send Filtered Bills via WhatsApp
+      </h2>
 
       <div className="grid gap-4">
         {Object.values(grouped).map((entry, idx) => (
@@ -67,15 +83,24 @@ const handleSendWhatsApp = ({ user, phoneNo, total, products }) => {
             className="bg-white shadow-md rounded-md p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center"
           >
             <div className="mb-2 sm:mb-0">
-              <p><strong>🏠 House:</strong> {entry.houseNo}</p>
-              <p><strong>👤 Name:</strong> {entry.user}</p>
-              <p><strong>📞 Phone:</strong> {entry.phoneNo}</p>
-              <p><strong>💵 Total:</strong> ₹{entry.total}</p>
-              <p className="mt-2 text-sm text-gray-700">
-                <strong>🛒 Products:</strong>{' '}
+              <p>
+                <strong>👤 Customer:</strong> {entry.user} / {entry.houseNo}
+              </p>
+              <p>
+                <strong>📞 Phone:</strong> {entry.phoneNo}
+              </p>
+              <p>
+                <strong>💵 Total:</strong> ₹{entry.total}
+              </p>
+              <p className="mt-2 text-sm text-gray-700 whitespace-pre-line">
+                <strong>🛒 Products:</strong>
+                {'\n'}
                 {Object.entries(entry.products)
-                  .map(([name, qty]) => `${name} x${qty}`)
-                  .join(', ')}
+                  .map(
+                    ([name, { qty, rate }]) =>
+                      `${name} - ${qty} x ₹${rate} = ₹${qty * rate}`
+                  )
+                  .join('\n')}
               </p>
             </div>
 
