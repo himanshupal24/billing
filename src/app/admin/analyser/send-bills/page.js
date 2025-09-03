@@ -52,13 +52,13 @@ export default function SendBillsPage() {
       .join('\n');
 
     const message =
-    `Anadi industries LLP\n\n`
+    `Anadi industries LLP\n\n`+
       `Customer Address/ No - ${houseNo}\n` +
       `Mobile No - ${phoneNo}\n` +
       `Delivered by - ${user}\n` +
       `Products:\n${productLines}\n\n` +
-      `Total Bill - ₹${total}\n` +
-      `(Billing Month: ${monthName-1})`
+      `Total Bill - ₹${total}\n` 
+      // `(Billing Month: ${monthName-1})`
       ;
 
 
