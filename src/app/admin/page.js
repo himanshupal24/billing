@@ -60,26 +60,26 @@ export default function AdminDashboard() {
 
 
     const handleDeletePhone = async (houseNo) => {
-  if (!confirm(`Are you sure you want to delete phone for house ${houseNo}?`)) return;
+        if (!confirm(`Are you sure you want to delete phone for house ${houseNo}?`)) return;
 
-  const res = await fetch(`/admin/api/phones?houseNo=${houseNo}`, {
-    method: 'DELETE',
-  });
-  const data = await res.json();
-  alert(data.message);
-  setPhones(prev => prev.filter(p => p.houseNo !== houseNo));
-};
+        const res = await fetch(`/admin/api/phones?houseNo=${houseNo}`, {
+            method: 'DELETE',
+        });
+        const data = await res.json();
+        alert(data.message);
+        setPhones(prev => prev.filter(p => p.houseNo !== houseNo));
+    };
 
-const handleDeleteProduct = async (name) => {
-  if (!confirm(`Are you sure you want to delete product "${name}"?`)) return;
+    const handleDeleteProduct = async (name) => {
+        if (!confirm(`Are you sure you want to delete product "${name}"?`)) return;
 
-  const res = await fetch(`/admin/api/products?name=${encodeURIComponent(name)}`, {
-    method: 'DELETE',
-  });
-  const data = await res.json();
-  alert(data.message);
-  setProducts(prev => prev.filter(p => p.name !== name));
-};
+        const res = await fetch(`/admin/api/products?name=${encodeURIComponent(name)}`, {
+            method: 'DELETE',
+        });
+        const data = await res.json();
+        alert(data.message);
+        setProducts(prev => prev.filter(p => p.name !== name));
+    };
 
     return (
         <div className="min-h-screen px-4 py-8 sm:px-8 md:px-16 lg:px-24 bg-gray-50">
@@ -134,19 +134,19 @@ const handleDeleteProduct = async (name) => {
                         <p className="text-gray-500">No phone entries yet.</p>
                     ) : (
                         <ul className="space-y-2 text-sm">
-                           {phones.map((p, idx) => (
-  <li key={idx} className="flex justify-between items-center border-b pb-1">
-    <div>
-      <span className="font-medium">🏠 {p.houseNo}</span> - <span>📞 {p.phoneNo}</span>
-    </div>
-    <button
-      onClick={() => handleDeletePhone(p.houseNo)}
-      className="text-red-600 hover:text-red-800 text-sm"
-    >
-      🗑️ Delete
-    </button>
-  </li>
-))}
+                            {phones.map((p, idx) => (
+                                <li key={idx} className="flex justify-between items-center border-b pb-1">
+                                    <div>
+                                        <span className="font-medium">🏠 {p.houseNo}</span> - <span>📞 {p.phoneNo}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => handleDeletePhone(p.houseNo)}
+                                        className="text-red-600 hover:text-red-800 text-sm"
+                                    >
+                                        🗑️ Delete
+                                    </button>
+                                </li>
+                            ))}
 
                         </ul>
                     )}
@@ -196,18 +196,18 @@ const handleDeleteProduct = async (name) => {
                 ) : (
                     <ul className="space-y-2 text-sm">
                         {products.map((p, idx) => (
-  <li key={idx} className="flex justify-between items-center border-b pb-1">
-    <div>
-      <span className="font-medium">{p.name}</span> - <span>₹ {p.defaultPrice}</span>
-    </div>
-    <button
-      onClick={() => handleDeleteProduct(p.name)}
-      className="text-red-600 hover:text-red-800 text-sm"
-    >
-      🗑️ Delete
-    </button>
-  </li>
-))}
+                            <li key={idx} className="flex justify-between items-center border-b pb-1">
+                                <div>
+                                    <span className="font-medium">{p.name}</span> - <span>₹ {p.defaultPrice}</span>
+                                </div>
+                                <button
+                                    onClick={() => handleDeleteProduct(p.name)}
+                                    className="text-red-600 hover:text-red-800 text-sm"
+                                >
+                                    🗑️ Delete
+                                </button>
+                            </li>
+                        ))}
 
                     </ul>
                 )}

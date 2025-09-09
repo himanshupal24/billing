@@ -110,70 +110,70 @@ export default function AdminAnalyser() {
   };
 
   // ✅ NEW Export to PDF
-// ✅ NEW Export to PDF
-const exportToPDF = () => {
-  const doc = new jsPDF();
 
-  // Title
-  doc.setFontSize(16);
-  doc.text('Bill Report', 14, 20);
+  const exportToPDF = () => {
+    const doc = new jsPDF();
 
-  // Calculate monthly totals (same logic as Excel)
-  const monthlyTotals = {};
-  filteredBills.forEach((bill) => {
-    const date = new Date(bill.createdAt);
-    const monthKey = `${bill.user}_${date.getFullYear()}-${date.getMonth() + 1}`;
-    if (!monthlyTotals[monthKey]) {
-      monthlyTotals[monthKey] = 0;
-    }
-    monthlyTotals[monthKey] += bill.totalAmount;
-  });
+    // Title
+    doc.setFontSize(16);
+    doc.text('Bill Report', 14, 20);
 
-  // Format table data
-  const tableData = filteredBills.flatMap((bill) => {
-    const date = new Date(bill.createdAt);
-    const monthKey = `${bill.user}_${date.getFullYear()}-${date.getMonth() + 1}`;
-    const monthlyTotal = monthlyTotals[monthKey] || 0;
+    // Calculate monthly totals (same logic as Excel)
+    const monthlyTotals = {};
+    filteredBills.forEach((bill) => {
+      const date = new Date(bill.createdAt);
+      const monthKey = `${bill.user}_${date.getFullYear()}-${date.getMonth() + 1}`;
+      if (!monthlyTotals[monthKey]) {
+        monthlyTotals[monthKey] = 0;
+      }
+      monthlyTotals[monthKey] += bill.totalAmount;
+    });
 
-    return bill.items.map((item) => [
-      bill.user,
-      bill.houseNo,
-      bill.phoneNo,
-      item.productName,
-      item.qty,
-      ` ${item.price * item.qty}`,
-      ` ${monthlyTotal}`,
-      date.toLocaleDateString('en-IN'),
-      date.toLocaleTimeString('en-IN'),
-    ]);
-  });
+    // Format table data
+    const tableData = filteredBills.flatMap((bill) => {
+      const date = new Date(bill.createdAt);
+      const monthKey = `${bill.user}_${date.getFullYear()}-${date.getMonth() + 1}`;
+      const monthlyTotal = monthlyTotals[monthKey] || 0;
 
-  // Headers (same as Excel)
-  const tableHeaders = [[
+      return bill.items.map((item) => [
+        bill.user,
+        bill.houseNo,
+        bill.phoneNo,
+        item.productName,
+        item.qty,
+        ` ${item.price * item.qty}`,
+        ` ${monthlyTotal}`,
+        date.toLocaleDateString('en-IN'),
+        date.toLocaleTimeString('en-IN'),
+      ]);
+    });
 
-    'Delivered by',
-    'House No',
-    'Phone No',
-    'Product',
-    'Quantity',
-    'Total Amount',
-    'Monthly Total',
-    'Date',
-    'Time',
-  ]];
+    // Headers (same as Excel)
+    const tableHeaders = [[
 
-  // ✅ Call autoTable with full details
-  autoTable(doc, {
-    head: tableHeaders,
-    body: tableData,
-    startY: 30,
-    styles: { fontSize: 8 }, // smaller font for fitting
-    headStyles: { fillColor: [41, 128, 185] }, // blue header
-  });
+      'Delivered by',
+      'House No',
+      'Phone No',
+      'Product',
+      'Quantity',
+      'Total Amount',
+      'Monthly Total',
+      'Date',
+      'Time',
+    ]];
 
-  // Save PDF
-  doc.save(`Bill_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
-};
+    // ✅ Call autoTable with full details
+    autoTable(doc, {
+      head: tableHeaders,
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 8 }, // smaller font for fitting
+      headStyles: { fillColor: [41, 128, 185] }, // blue header
+    });
+
+    // Save PDF
+    doc.save(`Bill_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
 
 
 
@@ -205,6 +205,28 @@ const exportToPDF = () => {
   };
 
   const { allTime, monthTotal, yearTotal } = getTotals();
+
+
+  const deleteBill = async (id) => {
+  const confirmed = window.confirm("Are you sure you want to delete this bill?");
+  if (!confirmed) return;
+
+  const res = await fetch(`/admin/api/bills/${id}`, {
+    method: "DELETE",
+  });
+
+  if (res.ok) {
+    // Remove bill from state without refetching
+    const updatedBills = bills.filter((b) => b._id !== id);
+    setBills(updatedBills);
+    setFilteredBills(updatedBills);
+    alert("✅ Bill deleted successfully");
+  } else {
+    alert("❌ Failed to delete bill");
+  }
+};
+
+
 
   const deleteBills = async () => {
     const confirmed = window.confirm(
@@ -248,11 +270,10 @@ const exportToPDF = () => {
           <button
             key={u}
             onClick={() => setSelectedUser(u)}
-            className={`px-4 py-2 rounded-md text-sm ${
-              selectedUser === u
+            className={`px-4 py-2 rounded-md text-sm ${selectedUser === u
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-200 text-gray-800'
-            }`}
+              }`}
           >
             {u}
           </button>
@@ -278,11 +299,11 @@ const exportToPDF = () => {
         </button>
 
         <button
-  onClick={exportToPDF}
-  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md"
->
-  📄 Export to PDF
-</button>
+          onClick={exportToPDF}
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md"
+        >
+          📄 Export to PDF
+        </button>
 
         <button
           onClick={deleteBills}
@@ -350,9 +371,17 @@ const exportToPDF = () => {
               <p className="font-medium text-gray-700">
                 🧑 {bill.user} | 🏠 {bill.houseNo} | 📞 {bill.phoneNo}
               </p>
-              <p className="text-gray-500 mt-2 sm:mt-0 text-xs sm:text-sm">
-                🕒 {new Date(bill.createdAt).toLocaleString()}
-              </p>
+              <div className="flex items-center gap-3 mt-2 sm:mt-0">
+                <p className="text-gray-500 text-xs sm:text-sm">
+                  🕒 {new Date(bill.createdAt).toLocaleString()}
+                </p>
+                <button
+                  onClick={() => deleteBill(bill._id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs"
+                >
+                  ❌ Delete
+                </button>
+              </div>
             </div>
             <p className="font-bold text-lg text-green-700 mt-2">
               ₹ {bill.totalAmount}
@@ -360,6 +389,7 @@ const exportToPDF = () => {
           </li>
         ))}
       </ul>
+
     </div>
   );
 }

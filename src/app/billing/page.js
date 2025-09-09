@@ -71,7 +71,18 @@ const handleGenerateBill = async () => {
 
   if (res.ok) {
     const whatsappURL = `https://wa.me/91${phoneNo}?text=${encodeURIComponent(message)}`;
-    window.location.href = whatsappURL; // ✅ safer for iOS/Android
+
+    // ✅ Clear the form BEFORE redirect
+    setUser('');
+    setHouseNo('');
+    setPhoneNo('');
+    setItems([]);
+    setProduct('');
+    setQty(1);
+    setPrice(0);
+
+    // ✅ Redirect to WhatsApp
+    window.location.href = whatsappURL;
   }
 
   alert(data.message);
