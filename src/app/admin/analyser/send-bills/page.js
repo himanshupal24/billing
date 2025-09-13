@@ -67,7 +67,7 @@ export default function SendBillsPage() {
     const cleanPhone = phoneNo.replace(/\D/g, '');
 
     // ✅ Correct wa.me link
-    const url = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
       message
     )}`;
 
