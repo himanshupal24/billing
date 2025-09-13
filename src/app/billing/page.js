@@ -38,7 +38,7 @@ export default function BillingPage() {
     setPrice(0);
   };
 
-const handleGenerateBill = async () => {
+  const handleGenerateBill = async () => {
   const total = items.reduce((sum, i) => sum + i.qty * i.price, 0);
 
   const date = new Date().toLocaleString('en-IN', {
@@ -53,7 +53,7 @@ const handleGenerateBill = async () => {
     `${i.productName} - ₹${i.price} x ${i.qty} = ₹${i.price * i.qty}`
   ).join('\n');
 
-  const message = 
+  const message =
     `Anadi Industries LLP\n\n` +
     `House No: ${houseNo}\n` +
     `Phone: ${phoneNo}\n` +
@@ -72,14 +72,16 @@ const handleGenerateBill = async () => {
   if (res.ok) {
     const whatsappURL = `https://wa.me/91${phoneNo}?text=${encodeURIComponent(message)}`;
 
-    // ✅ Clear the form BEFORE redirect
-  
+    // ✅ Clear everything EXCEPT user
     setHouseNo('');
     setPhoneNo('');
     setItems([]);
     setProduct('');
     setQty(1);
     setPrice(0);
+
+    // ✅ Keep user saved in localStorage
+    localStorage.setItem('currentUser', user);
 
     // ✅ Redirect to WhatsApp
     window.location.href = whatsappURL;
@@ -88,7 +90,8 @@ const handleGenerateBill = async () => {
   alert(data.message);
 };
 
-  
+
+
 
 
 
@@ -105,8 +108,8 @@ const handleGenerateBill = async () => {
     handleGenerateBill();
   };
   const handleRemoveItem = (index) => {
-  setItems(items.filter((_, i) => i !== index));
-};
+    setItems(items.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
@@ -191,20 +194,20 @@ const handleGenerateBill = async () => {
         </div>
 
         <ul className="text-sm space-y-2">
-  {items.map((item, idx) => (
-    <li key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded">
-      <span>
-        🛒 {item.productName} - ₹{item.price} x {item.qty} = ₹{item.price * item.qty}
-      </span>
-      <button
-        onClick={() => handleRemoveItem(idx)}
-        className="text-red-500 hover:text-red-700 font-semibold"
-      >
-        ❌ Cancel
-      </button>
-    </li>
-  ))}
-</ul>
+          {items.map((item, idx) => (
+            <li key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded">
+              <span>
+                🛒 {item.productName} - ₹{item.price} x {item.qty} = ₹{item.price * item.qty}
+              </span>
+              <button
+                onClick={() => handleRemoveItem(idx)}
+                className="text-red-500 hover:text-red-700 font-semibold"
+              >
+                ❌ Cancel
+              </button>
+            </li>
+          ))}
+        </ul>
 
 
         <p className="font-bold text-xl text-right">
