@@ -52,24 +52,24 @@ export default function SendBillsPage() {
       .join('\n');
 
     const message =
-    `Anadi industries LLP\n\n`+
+      `Anadi industries LLP\n\n` +
       `Customer Address/ No - ${houseNo}\n` +
       `Mobile No - ${phoneNo}\n` +
       `Delivered by - ${user}\n` +
       `Products:\n${productLines}\n\n` +
-      `Total Bill - ₹${total}\n` 
-      // `(Billing Month: ${monthName-1})`
-      ;
-
-
+      `Total Bill - ₹${total}\n`;
+    // `(Billing Month: ${monthName-1})`
 
     // ✅ Ensure only digits for phone number
-    const cleanPhone = phoneNo.replace(/\D/g, '');
+    let cleanPhone = phoneNo.replace(/\D/g, '');
+
+    // ✅ Add country code if missing (default India = 91)
+    if (!cleanPhone.startsWith("91")) {
+      cleanPhone = "91" + cleanPhone;
+    }
 
     // ✅ Correct wa.me link
-    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-      message
-    )}`;
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
     window.location.href = url; // works for Android & iOS
   };
@@ -88,13 +88,14 @@ export default function SendBillsPage() {
           >
             <div className="mb-2 sm:mb-0">
               <p>
-                <strong>👤 Customer Address:</strong>  {entry.houseNo}
+                <strong>👤 Customer Address:</strong> {entry.houseNo}
               </p>
               <p>
                 <strong>📞 Phone:</strong> {entry.phoneNo}
               </p>
               <p>
-                <strong>🧑‍💼 Delivered by:</strong> {entry.user}</p>
+                <strong>🧑‍💼 Delivered by:</strong> {entry.user}
+              </p>
               <p>
                 <strong>💵 Total:</strong> ₹{entry.total}
               </p>
