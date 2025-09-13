@@ -73,7 +73,7 @@ const handleGenerateBill = async () => {
     const whatsappURL = `https://wa.me/91${phoneNo}?text=${encodeURIComponent(message)}`;
 
     // ✅ Clear the form BEFORE redirect
-    setUser('');
+  
     setHouseNo('');
     setPhoneNo('');
     setItems([]);
